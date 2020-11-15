@@ -30,4 +30,7 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'discord' => [
+        'authToken' => env('DISCORD_AUTH_TOKEN')
+    ],
 ];
