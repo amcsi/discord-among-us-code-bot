@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Discord\Discord;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,7 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton(Discord::class, fn() => new Discord([
+            'token' => config('services.discord.authToken'),
+        ]));
     }
 
     /**

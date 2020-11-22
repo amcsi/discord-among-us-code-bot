@@ -18,17 +18,19 @@ class RunBotCommand extends Command
 
     private ServerConfigs $serverConfigs;
     private $arrayCache;
+    private Discord $discord;
 
     /**
      * Create a new command instance.
      *
      * @return void
      */
-    public function __construct(ServerConfigs $serverConfigs)
+    public function __construct(ServerConfigs $serverConfigs, Discord $discord)
     {
         parent::__construct();
         $this->serverConfigs = $serverConfigs;
         $this->arrayCache = cache()->driver('array');
+        $this->discord = $discord;
     }
 
     /**
@@ -38,9 +40,7 @@ class RunBotCommand extends Command
      */
     public function handle()
     {
-        $discord = new Discord([
-            'token' => config('services.discord.authToken'),
-        ]);
+        $discord = $this->discord;
 
         $serverConfigBySourceChannelIds = $this->serverConfigs->getServerConfigsBySourceChannelIds();
         $configsByServerId = $this->serverConfigs->getConfigsByServerId();
