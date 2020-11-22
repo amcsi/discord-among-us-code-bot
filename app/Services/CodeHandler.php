@@ -64,7 +64,12 @@ class CodeHandler
 
         $this->serverCodes->setCode($voiceChannel, $codeContent);
 
-        $targetMessage->content = $this->serverCodes->getServerCodeMessageContent($guild);
+        $messageContent = $this->serverCodes->getServerCodeMessageContent($guild);
+
+        $this->logger->debug('Updating message to:');
+        $this->logger->debug($messageContent);
+
+        $targetMessage->content = $messageContent;
         return $targetMessage->channel->messages->save($targetMessage);
     }
 }
