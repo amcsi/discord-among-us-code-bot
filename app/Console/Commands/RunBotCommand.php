@@ -8,6 +8,7 @@ use App\Services\TargetMessageByGuildFetcher;
 use Discord\Discord;
 use Discord\Parts\Channel\Message;
 use Illuminate\Console\Command;
+use Psr\Log\LoggerInterface;
 
 class RunBotCommand extends Command
 {
@@ -16,23 +17,27 @@ class RunBotCommand extends Command
     protected $description = 'Runs the bot';
 
     private ServerConfigs $serverConfigs;
-    private $arrayCache;
     private Discord $discord;
     private TargetChannelByMessageGetter $targetChannelByMessageGetter;
     private TargetMessageByGuildFetcher $targetMessageByGuildFetcher;
+    private $promiseFailHandler;
 
     public function __construct(
         ServerConfigs $serverConfigs,
         Discord $discord,
         TargetChannelByMessageGetter $targetChannelByMessageGetter,
-        TargetMessageByGuildFetcher $targetMessageByGuildFetcher
+        TargetMessageByGuildFetcher $targetMessageByGuildFetcher,
+        LoggerInterface $logger
     ) {
         parent::__construct();
         $this->serverConfigs = $serverConfigs;
-        $this->arrayCache = cache()->driver('array');
         $this->discord = $discord;
         $this->targetChannelByMessageGetter = $targetChannelByMessageGetter;
         $this->targetMessageByGuildFetcher = $targetMessageByGuildFetcher;
+        $this->promiseFailHandler = function ($error) use ($logger) {
+            $logger->error($error);
+            $this->error($error);
+        };
     }
 
     /**
@@ -46,6 +51,17 @@ class RunBotCommand extends Command
 
         $discord->on('ready', function (Discord $discord) {
             echo "Bot is ready.", PHP_EOL;
+
+            foreach ($this->serverConfigs->getConfigsByServerId() as $guildId => $serverConfig) {
+                $guild = $this->discord->guilds->get('id', $guildId);
+                $this->targetMessageByGuildFetcher->fetch($guild)->done(
+                    function (Message $message) {
+                        $message->content = trans('bot.justConnected');
+                        $message->channel->messages->save($message)->then(null, $this->promiseFailHandler);
+                    },
+                    $this->promiseFailHandler
+                );
+            }
 
             // Listen for events here
             $discord->on('message', function (Message $message) {

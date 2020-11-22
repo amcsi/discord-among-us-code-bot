@@ -57,7 +57,7 @@ class TargetMessageByGuildFetcher
                     $onHasTargetMessageDeferred->resolve($targetMessage);
                 } else {
                     // No message yet? Then create one.
-                    $targetChannel->sendMessage('This is my message :)')->done(
+                    $targetChannel->sendMessage(trans('bot.startingMessage'))->done(
                         function (Message $newMessage) use (
                             $targetMessageCacheKey,
                             $onHasTargetMessageDeferred
