@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Config\ServerConfigs;
+use App\Services\CodeHandler;
 use App\Services\TargetChannelByMessageGetter;
 use App\Services\TargetMessageByGuildFetcher;
 use Discord\Discord;
@@ -20,6 +21,7 @@ class RunBotCommand extends Command
     private Discord $discord;
     private TargetChannelByMessageGetter $targetChannelByMessageGetter;
     private TargetMessageByGuildFetcher $targetMessageByGuildFetcher;
+    private CodeHandler $codeHandler;
     private $promiseFailHandler;
 
     public function __construct(
@@ -27,6 +29,7 @@ class RunBotCommand extends Command
         Discord $discord,
         TargetChannelByMessageGetter $targetChannelByMessageGetter,
         TargetMessageByGuildFetcher $targetMessageByGuildFetcher,
+        CodeHandler $codeHandler,
         LoggerInterface $logger
     ) {
         parent::__construct();
@@ -34,6 +37,7 @@ class RunBotCommand extends Command
         $this->discord = $discord;
         $this->targetChannelByMessageGetter = $targetChannelByMessageGetter;
         $this->targetMessageByGuildFetcher = $targetMessageByGuildFetcher;
+        $this->codeHandler = $codeHandler;
         $this->promiseFailHandler = function ($error) use ($logger) {
             $logger->error($error);
             $this->error($error);
@@ -72,7 +76,9 @@ class RunBotCommand extends Command
                 }
 
                 $targetMessagePromise = $this->targetMessageByGuildFetcher->fetch($targetChannel->guild);
-                $targetMessagePromise->done(null, fn($failure) => $this->error('Could not save message: ' . $failure));
+                $targetMessagePromise->done(function (Message $targetMessage) use ($message) {
+                    $this->codeHandler->handle($message, $targetMessage)->then(null, $this->promiseFailHandler);
+                }, fn($failure) => $this->error('Could not save message: ' . $failure));
 
                 echo "Received a message from {$message->author->username}: {$message->content}", PHP_EOL;
 

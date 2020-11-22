@@ -16,7 +16,7 @@ class ServerConfigs
     {
         $this->configsByServer = collect([
             // Test server
-            '774696290398765137' => new DiscordServerConfig('774696290398765140', '778324539771191347'),
+            '774696290398765137' => new DiscordServerConfig('774696290398765140', '778324539771191347', ['/^Voice/']),
         ]);
     }
 
