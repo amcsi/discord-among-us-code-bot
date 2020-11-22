@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Config\ServerConfigs;
-use Discord\Discord;
 use Discord\Parts\Channel\Channel;
 use Discord\Parts\Channel\Message;
 use Illuminate\Contracts\Cache\Repository;
@@ -15,15 +14,15 @@ use Illuminate\Contracts\Cache\Repository;
  */
 class TargetChannelByMessageGetter
 {
-    private Discord $discord;
     private ServerConfigs $serverConfigs;
     private Repository $arrayCache;
+    private TargetChannelByGuildGetter $targetChannelByGuildGetter;
 
-    public function __construct(Discord $discord, ServerConfigs $serverConfigs)
+    public function __construct(ServerConfigs $serverConfigs, TargetChannelByGuildGetter $targetChannelByGuildGetter)
     {
-        $this->discord = $discord;
         $this->serverConfigs = $serverConfigs;
         $this->arrayCache = cache()->driver('array');
+        $this->targetChannelByGuildGetter = $targetChannelByGuildGetter;
     }
 
     public function get(Message $message): ?Channel
@@ -33,13 +32,7 @@ class TargetChannelByMessageGetter
             // Not among the source channels that should be checked for messages.
             return null;
         }
-        $targetChannelId = $serverConfigBySourceChannelIds[$message->channel->id]->getTargetChannelId();
 
-        /** @var Channel $targetChannel */
-        $targetChannel = $this->arrayCache->rememberForever(
-            "channel_by_id_$targetChannelId",
-            fn() => $this->discord->getChannel($targetChannelId)
-        );
-        return $targetChannel;
+        return $this->targetChannelByGuildGetter->get($message->channel->guild);
     }
 }
