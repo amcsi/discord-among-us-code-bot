@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "be314483022ba77bf011f29c824613b4",
+    "content-hash": "fb9b34900f2347df2af9a764d4bf35a5",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -5603,16 +5603,16 @@
         },
         {
             "name": "team-reflex/discord-php",
-            "version": "v5.0.12",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/teamreflex/DiscordPHP.git",
-                "reference": "6899b77909f3bb6e6c91d74dbc88103dee712690"
+                "reference": "3f4332f5bbd2b964708b08611a4c4f6e53d62ae6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/teamreflex/DiscordPHP/zipball/6899b77909f3bb6e6c91d74dbc88103dee712690",
-                "reference": "6899b77909f3bb6e6c91d74dbc88103dee712690",
+                "url": "https://api.github.com/repos/teamreflex/DiscordPHP/zipball/3f4332f5bbd2b964708b08611a4c4f6e53d62ae6",
+                "reference": "3f4332f5bbd2b964708b08611a4c4f6e53d62ae6",
                 "shasum": ""
             },
             "require": {
@@ -5631,6 +5631,7 @@
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^2.16",
+                "phpunit/phpunit": "^9.4",
                 "symfony/var-dumper": "*"
             },
             "suggest": {
@@ -5639,6 +5640,7 @@
                 "ext-mbstring": "For accurate calculations of string length when handling non-english characters.",
                 "ext-uv": "For a faster, and more performant loop. PHP >=7 only. Preferred."
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "files": [
@@ -5665,9 +5667,9 @@
             "description": "An unofficial API to interact with the voice and text service Discord.",
             "support": {
                 "issues": "https://github.com/teamreflex/DiscordPHP/issues",
-                "source": "https://github.com/teamreflex/DiscordPHP/tree/v5.0.12"
+                "source": "https://github.com/teamreflex/DiscordPHP/tree/master"
             },
-            "time": "2020-11-10T22:11:15+00:00"
+            "time": "2020-11-20T03:25:55+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -8720,6 +8722,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "team-reflex/discord-php": 20,
         "roave/security-advisories": 20
     },
     "prefer-stable": true,

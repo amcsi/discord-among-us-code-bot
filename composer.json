@@ -14,7 +14,7 @@
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.12",
         "laravel/tinker": "^2.5",
-        "team-reflex/discord-php": "^5.0"
+        "team-reflex/discord-php": "dev-master"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
