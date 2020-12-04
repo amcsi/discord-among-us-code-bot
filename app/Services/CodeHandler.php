@@ -15,17 +15,14 @@ use React\Promise\ExtendedPromiseInterface;
 
 class CodeHandler
 {
-    private ServerCodes $serverCodes;
-    private ServerConfigs $serverConfigs;
     private $arrayCache;
-    private LoggerInterface $logger;
 
-    public function __construct(ServerCodes $serverCodes, ServerConfigs $serverConfigs, LoggerInterface $logger)
-    {
-        $this->serverCodes = $serverCodes;
-        $this->serverConfigs = $serverConfigs;
+    public function __construct(
+        private ServerCodes $serverCodes,
+        private ServerConfigs $serverConfigs,
+        private LoggerInterface $logger,
+    ) {
         $this->arrayCache = cache()->driver('array');
-        $this->logger = $logger;
     }
 
     public function handle(Message $sourceMessage, Message $targetMessage): ExtendedPromiseInterface

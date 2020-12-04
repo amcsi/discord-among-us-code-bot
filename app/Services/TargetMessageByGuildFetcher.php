@@ -13,15 +13,13 @@ use React\Promise\Promise;
 
 class TargetMessageByGuildFetcher
 {
-    private Discord $discord;
     private Repository $arrayCache;
-    private TargetChannelByGuildGetter $targetChannelByGuildGetter;
 
-    public function __construct(Discord $discord, TargetChannelByGuildGetter $targetChannelByGuildGetter)
-    {
-        $this->discord = $discord;
+    public function __construct(
+        private Discord $discord,
+        private TargetChannelByGuildGetter $targetChannelByGuildGetter,
+    ) {
         $this->arrayCache = cache()->driver('array');
-        $this->targetChannelByGuildGetter = $targetChannelByGuildGetter;
     }
 
     public function fetch(Guild $guild): Promise

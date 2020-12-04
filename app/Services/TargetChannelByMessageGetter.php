@@ -14,15 +14,13 @@ use Illuminate\Contracts\Cache\Repository;
  */
 class TargetChannelByMessageGetter
 {
-    private ServerConfigs $serverConfigs;
     private Repository $arrayCache;
-    private TargetChannelByGuildGetter $targetChannelByGuildGetter;
 
-    public function __construct(ServerConfigs $serverConfigs, TargetChannelByGuildGetter $targetChannelByGuildGetter)
-    {
-        $this->serverConfigs = $serverConfigs;
+    public function __construct(
+        private ServerConfigs $serverConfigs,
+        private TargetChannelByGuildGetter $targetChannelByGuildGetter,
+    ) {
         $this->arrayCache = cache()->driver('array');
-        $this->targetChannelByGuildGetter = $targetChannelByGuildGetter;
     }
 
     public function get(Message $message): ?Channel

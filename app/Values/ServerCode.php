@@ -7,14 +7,7 @@ use Discord\Parts\Channel\Channel;
 
 class ServerCode
 {
-    private Channel $voiceChannel;
-    private string $code;
-
-    public function __construct(Channel $voiceChannel, string $code)
-    {
-        $this->voiceChannel = $voiceChannel;
-        $this->code = $code;
-    }
+    public function __construct(private Channel $voiceChannel, private string $code) {}
 
     public function getVoiceChannel(): Channel
     {

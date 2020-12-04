@@ -10,12 +10,10 @@ use Illuminate\Contracts\Cache\Repository;
 
 class TargetChannelByGuildGetter
 {
-    private ServerConfigs $serverConfigs;
     private Repository $arrayCache;
 
-    public function __construct(ServerConfigs $serverConfigs)
+    public function __construct(private ServerConfigs $serverConfigs)
     {
-        $this->serverConfigs = $serverConfigs;
         $this->arrayCache = cache()->driver('array');
     }
 
