@@ -29,6 +29,13 @@ class CodeHandler
     {
         $guild = $sourceMessage->channel->guild;
         $serverConfig = $this->serverConfigs->getConfigsByServerId()[$guild->id];
+
+        $formattedServerAndCode = CodeMatcher::matchAndFormatText($sourceMessage->content);
+        if (!$formattedServerAndCode) {
+            $this->logger->debug('No server code was detected in this message.');
+            return \React\Promise\resolve();
+        }
+
         /** @var Collection|Channel[] $allowedVoiceChannels */
         $allowedVoiceChannels = $this->arrayCache->remember(
             "voice_channels_by_guild_id_{$guild->id}",
@@ -56,10 +63,7 @@ class CodeHandler
             return $deferred->promise();
         }
 
-        // TODO: filter out what look like Among Us codes.
-        $codeContent = $sourceMessage->content;
-
-        $this->serverCodes->setCode($voiceChannel, $codeContent);
+        $this->serverCodes->setCode($voiceChannel, $formattedServerAndCode);
 
         $messageContent = $this->serverCodes->getServerCodeMessageContent($guild);
 
