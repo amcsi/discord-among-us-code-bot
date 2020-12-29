@@ -8,8 +8,10 @@ use App\Services\PromiseFailHandler;
 use App\Services\TargetChannelByMessageGetter;
 use App\Services\TargetMessageByGuildFetcher;
 use App\Services\TargetMessageUpdater;
+use App\Values\ServerCodes;
 use Discord\Discord;
 use Discord\Parts\Channel\Message;
+use Discord\WebSockets\Event;
 use Illuminate\Console\Command;
 
 class RunBotCommand extends Command
@@ -25,6 +27,7 @@ class RunBotCommand extends Command
         private TargetMessageByGuildFetcher $targetMessageByGuildFetcher,
         private TargetMessageUpdater $targetMessageUpdater,
         private CodeHandler $codeHandler,
+        private ServerCodes $serverCodes,
         private PromiseFailHandler $promiseFailHandler,
     ) {
         parent::__construct();
@@ -49,20 +52,20 @@ class RunBotCommand extends Command
 
             // Listen for events here
             $discord->on('message', function (Message $message) {
-                $targetChannel = $this->targetChannelByMessageGetter->get($message);
-                if (!$targetChannel) {
-                    // Not among the source channels that should be checked for messages.
-                    return null;
-                }
-
-                $targetMessagePromise = $this->targetMessageByGuildFetcher->fetch($targetChannel->guild);
-                $targetMessagePromise->done(function (Message $targetMessage) use ($message) {
-                    $this->codeHandler->handle($message, $targetMessage)->then(null, $this->promiseFailHandler);
-                }, fn($failure) => $this->error('Could not save message: ' . $failure));
+                $this->codeHandler->handle($message);
 
                 echo "Received a message from {$message->author->username}: {$message->content}", PHP_EOL;
+            });
 
-                return null;
+            $discord->on(Event::MESSAGE_UPDATE, function (Message $message) {
+                if (!$this->serverCodes->hasMessageServerCode($message)) {
+                    // This message is not among the sources of the server codes. Ignore it.
+                    return;
+                }
+
+                $this->codeHandler->handle($message);
+
+                echo "Received an update to a message from {$message->author->username}: {$message->content}", PHP_EOL;
             });
 
             $loop = $discord->getLoop();

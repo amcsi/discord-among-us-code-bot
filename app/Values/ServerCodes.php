@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use Discord\Parts\Channel\Message;
 use Discord\Parts\Guild\Guild;
 use Illuminate\Support\Collection;
 
@@ -10,10 +11,13 @@ class ServerCodes
 {
     /** @var Collection|ServerCode[][] */
     private Collection $codes;
+    /** @var Collection|ServerCode[] */
+    private Collection $codeByMessageIdMap;
 
     public function __construct()
     {
         $this->codes = new Collection();
+        $this->codeByMessageIdMap = new Collection();
     }
 
     public function setServerCode(ServerCode $serverCode): void
@@ -27,6 +31,15 @@ class ServerCodes
         $this->codes[$guildId] = $this->codes[$guildId]->sortBy(
             fn(ServerCode $serverCode) => $serverCode->voiceChannel->position
         );
+        $this->codeByMessageIdMap[$serverCode->sourceMessage->id] = $serverCode;
+    }
+
+    /**
+     * Returns if there is a server code for the passed message.
+     */
+    public function hasMessageServerCode(Message $sourceMessage): bool
+    {
+        return isset($this->codeByMessageIdMap[$sourceMessage->id]);
     }
 
     /** @return  Collection|ServerCode[] $codes */

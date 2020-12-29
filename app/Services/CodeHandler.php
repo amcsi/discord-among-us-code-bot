@@ -23,12 +23,34 @@ class CodeHandler
     public function __construct(
         private ServerCodes $serverCodes,
         private ServerConfigs $serverConfigs,
+        private TargetMessageByGuildFetcher $targetMessageByGuildFetcher,
+        private TargetChannelByMessageGetter $targetChannelByMessageGetter,
+        private PromiseFailHandler $promiseFailHandler,
         private LoggerInterface $logger,
     ) {
         $this->arrayCache = cache()->driver('array');
     }
 
-    public function handle(Message $sourceMessage, Message $targetMessage): ExtendedPromiseInterface
+    /**
+     * Handles updating a code based on an incoming message.
+     *
+     * If the message does not come from one of the configured guilds, it is ignored.
+     */
+    public function handle(Message $sourceMessage): void
+    {
+        $targetChannel = $this->targetChannelByMessageGetter->get($sourceMessage);
+        if (!$targetChannel) {
+            // Not among the source channels that should be checked for messages.
+            return;
+        }
+
+        $targetMessagePromise = $this->targetMessageByGuildFetcher->fetch($targetChannel->guild);
+        $targetMessagePromise->done(function (Message $targetMessage) use ($sourceMessage) {
+            $this->handleWithTargetMessage($sourceMessage, $targetMessage)->then(null, $this->promiseFailHandler);
+        }, fn($failure) => $this->logger->warning('Could not save message: ' . $failure));
+    }
+
+    private function handleWithTargetMessage(Message $sourceMessage, Message $targetMessage): ExtendedPromiseInterface
     {
         $guild = $sourceMessage->channel->guild;
         $serverConfig = $this->serverConfigs->getConfigsByServerId()[$guild->id];
