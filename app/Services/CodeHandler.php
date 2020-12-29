@@ -4,11 +4,13 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Config\ServerConfigs;
+use App\Message\DeletedMessage;
 use App\Values\ServerCode;
 use App\Values\ServerCodes;
 use Discord\Helpers\Collection;
 use Discord\Parts\Channel\Channel;
 use Discord\Parts\Channel\Message;
+use Discord\Parts\Guild\Guild;
 use Illuminate\Support\Arr;
 use Psr\Log\LoggerInterface;
 use React\Promise\ExtendedPromiseInterface;
@@ -25,6 +27,7 @@ class CodeHandler
         private ServerConfigs $serverConfigs,
         private TargetMessageByGuildFetcher $targetMessageByGuildFetcher,
         private TargetChannelByMessageGetter $targetChannelByMessageGetter,
+        private TargetChannelByGuildGetter $targetChannelByGuildGetter,
         private PromiseFailHandler $promiseFailHandler,
         private LoggerInterface $logger,
     ) {
@@ -95,5 +98,30 @@ class CodeHandler
 
         $targetMessage->content = $messageContent;
         return $targetMessage->channel->messages->save($targetMessage);
+    }
+
+    public function handleDelete(DeletedMessage $deletedMessage): void
+    {
+        $guild = $deletedMessage->channel->guild;
+
+        $this->serverCodes->unsetServerCodeBySourceMessageId($deletedMessage->id);
+
+        $this->updateCodes($guild);
+    }
+
+    private function updateCodes(Guild $guild): void
+    {
+        $targetChannel = $this->targetChannelByGuildGetter->get($guild);
+
+        $targetMessagePromise = $this->targetMessageByGuildFetcher->fetch($targetChannel->guild);
+        $targetMessagePromise->done(function (Message $targetMessage) use ($guild) {
+            $messageContent = $this->serverCodes->getServerCodeMessageContent($guild);
+
+            $this->logger->debug('Updating message to:');
+            $this->logger->debug($messageContent);
+
+            $targetMessage->content = $messageContent;
+            return $targetMessage->channel->messages->save($targetMessage);
+        }, fn($failure) => $this->logger->warning('Could not save message: ' . $failure));
     }
 }

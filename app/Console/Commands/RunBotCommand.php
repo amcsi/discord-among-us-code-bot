@@ -3,10 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Config\ServerConfigs;
+use App\Message\DeletedMessage;
 use App\Services\CodeHandler;
-use App\Services\PromiseFailHandler;
-use App\Services\TargetChannelByMessageGetter;
-use App\Services\TargetMessageByGuildFetcher;
 use App\Services\TargetMessageUpdater;
 use App\Values\ServerCodes;
 use Discord\Discord;
@@ -23,12 +21,9 @@ class RunBotCommand extends Command
     public function __construct(
         private ServerConfigs $serverConfigs,
         private Discord $discord,
-        private TargetChannelByMessageGetter $targetChannelByMessageGetter,
-        private TargetMessageByGuildFetcher $targetMessageByGuildFetcher,
         private TargetMessageUpdater $targetMessageUpdater,
         private CodeHandler $codeHandler,
         private ServerCodes $serverCodes,
-        private PromiseFailHandler $promiseFailHandler,
     ) {
         parent::__construct();
     }
@@ -58,7 +53,7 @@ class RunBotCommand extends Command
             });
 
             $discord->on(Event::MESSAGE_UPDATE, function (Message $message) {
-                if (!$this->serverCodes->hasMessageServerCode($message)) {
+                if (!$this->serverCodes->hasMessageServerCode($message->id)) {
                     // This message is not among the sources of the server codes. Ignore it.
                     return;
                 }
@@ -66,6 +61,19 @@ class RunBotCommand extends Command
                 $this->codeHandler->handle($message);
 
                 echo "Received an update to a message from {$message->author->username}: {$message->content}", PHP_EOL;
+            });
+
+            $discord->on(Event::MESSAGE_DELETE, function ($message) {
+                if (!$this->serverCodes->hasMessageServerCode($message->id)) {
+                    // This message is not among the sources of the server codes. Ignore it.
+                    return;
+                }
+
+                $this->codeHandler->handleDelete(
+                    new DeletedMessage($message->id, $this->discord->getChannel($message->channel_id))
+                );
+
+                echo 'Deleting a message.', PHP_EOL;
             });
 
             $loop = $discord->getLoop();
