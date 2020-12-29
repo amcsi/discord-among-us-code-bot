@@ -10,9 +10,11 @@ use Discord\Parts\Channel\Channel;
 use Discord\Parts\Channel\Message;
 use Illuminate\Support\Arr;
 use Psr\Log\LoggerInterface;
-use React\Promise\Deferred;
 use React\Promise\ExtendedPromiseInterface;
 
+/**
+ * Saves a code update if the message has a code in it, then updates the codes message if so.
+ */
 class CodeHandler
 {
     private $arrayCache;
@@ -58,9 +60,7 @@ class CodeHandler
 
         if (!$voiceChannel) {
             $this->logger->debug('The author of the message is not in any of the designated game voice channels.');
-            $deferred = new Deferred();
-            $deferred->resolve();
-            return $deferred->promise();
+            return \React\Promise\resolve();
         }
 
         $this->serverCodes->setCode($voiceChannel, $formattedServerAndCode);

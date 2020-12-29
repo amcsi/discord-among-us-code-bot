@@ -24,7 +24,9 @@ class ServerCodes
             $this->codes[$guildId] = new Collection();
         }
         $this->codes[$guildId][$voiceChannel->id] = new ServerCode($voiceChannel, $code);
-        $this->codes[$guildId] = $this->codes[$guildId]->sortBy(fn(ServerCode $serverCode) => $serverCode->getVoiceChannel()->position);
+        $this->codes[$guildId] = $this->codes[$guildId]->sortBy(
+            fn(ServerCode $serverCode) => $serverCode->voiceChannel->position
+        );
     }
 
     /** @return  Collection|ServerCode[] $codes */
@@ -49,8 +51,8 @@ class ServerCodes
             $codes->map(
                 fn(ServerCode $serverCode) => sprintf(
                     '%s: %s',
-                    $serverCode->getVoiceChannel()->name,
-                    $serverCode->getCode()
+                    $serverCode->voiceChannel->name,
+                    $serverCode->code
                 )
             )->join("\n")
         );

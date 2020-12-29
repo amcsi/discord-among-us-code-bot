@@ -4,18 +4,10 @@ declare(strict_types=1);
 namespace App\Values;
 
 use Discord\Parts\Channel\Channel;
+use JetBrains\PhpStorm\Immutable;
 
+#[Immutable]
 class ServerCode
 {
-    public function __construct(private Channel $voiceChannel, private string $code) {}
-
-    public function getVoiceChannel(): Channel
-    {
-        return $this->voiceChannel;
-    }
-
-    public function getCode(): string
-    {
-        return $this->code;
-    }
+    public function __construct(public Channel $voiceChannel, public string $code) {}
 }
