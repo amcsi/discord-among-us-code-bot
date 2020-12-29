@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use Discord\Parts\Channel\Channel;
 use Discord\Parts\Guild\Guild;
 use Illuminate\Support\Collection;
 
@@ -17,13 +16,14 @@ class ServerCodes
         $this->codes = new Collection();
     }
 
-    public function setCode(Channel $voiceChannel, string $code): void
+    public function setServerCode(ServerCode $serverCode): void
     {
+        $voiceChannel = $serverCode->voiceChannel;
         $guildId = $voiceChannel->guild->id;
         if (!isset($this->codes[$guildId])) {
             $this->codes[$guildId] = new Collection();
         }
-        $this->codes[$guildId][$voiceChannel->id] = new ServerCode($voiceChannel, $code);
+        $this->codes[$guildId][$voiceChannel->id] = $serverCode;
         $this->codes[$guildId] = $this->codes[$guildId]->sortBy(
             fn(ServerCode $serverCode) => $serverCode->voiceChannel->position
         );

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Config\ServerConfigs;
+use App\Values\ServerCode;
 use App\Values\ServerCodes;
 use Discord\Helpers\Collection;
 use Discord\Parts\Channel\Channel;
@@ -63,7 +64,7 @@ class CodeHandler
             return \React\Promise\resolve();
         }
 
-        $this->serverCodes->setCode($voiceChannel, $formattedServerAndCode);
+        $this->serverCodes->setServerCode(new ServerCode($sourceMessage, $voiceChannel, $formattedServerAndCode));
 
         $messageContent = $this->serverCodes->getServerCodeMessageContent($guild);
 
