@@ -4,12 +4,13 @@ namespace App\Console\Commands;
 
 use App\Config\ServerConfigs;
 use App\Services\CodeHandler;
+use App\Services\PromiseFailHandler;
 use App\Services\TargetChannelByMessageGetter;
 use App\Services\TargetMessageByGuildFetcher;
+use App\Services\TargetMessageUpdater;
 use Discord\Discord;
 use Discord\Parts\Channel\Message;
 use Illuminate\Console\Command;
-use Psr\Log\LoggerInterface;
 
 class RunBotCommand extends Command
 {
@@ -17,31 +18,16 @@ class RunBotCommand extends Command
 
     protected $description = 'Runs the bot';
 
-    private ServerConfigs $serverConfigs;
-    private Discord $discord;
-    private TargetChannelByMessageGetter $targetChannelByMessageGetter;
-    private TargetMessageByGuildFetcher $targetMessageByGuildFetcher;
-    private CodeHandler $codeHandler;
-    private $promiseFailHandler;
-
     public function __construct(
-        ServerConfigs $serverConfigs,
-        Discord $discord,
-        TargetChannelByMessageGetter $targetChannelByMessageGetter,
-        TargetMessageByGuildFetcher $targetMessageByGuildFetcher,
-        CodeHandler $codeHandler,
-        LoggerInterface $logger
+        private ServerConfigs $serverConfigs,
+        private Discord $discord,
+        private TargetChannelByMessageGetter $targetChannelByMessageGetter,
+        private TargetMessageByGuildFetcher $targetMessageByGuildFetcher,
+        private TargetMessageUpdater $targetMessageUpdater,
+        private CodeHandler $codeHandler,
+        private PromiseFailHandler $promiseFailHandler,
     ) {
         parent::__construct();
-        $this->serverConfigs = $serverConfigs;
-        $this->discord = $discord;
-        $this->targetChannelByMessageGetter = $targetChannelByMessageGetter;
-        $this->targetMessageByGuildFetcher = $targetMessageByGuildFetcher;
-        $this->codeHandler = $codeHandler;
-        $this->promiseFailHandler = function ($error) use ($logger) {
-            $logger->error($error);
-            $this->error($error);
-        };
     }
 
     /**
@@ -56,15 +42,9 @@ class RunBotCommand extends Command
         $discord->on('ready', function (Discord $discord) {
             echo "Bot is ready.", PHP_EOL;
 
-            foreach ($this->serverConfigs->getConfigsByServerId() as $guildId => $serverConfig) {
-                $guild = $this->discord->guilds->get('id', $guildId);
-                $this->targetMessageByGuildFetcher->fetch($guild)->done(
-                    function (Message $message) {
-                        $message->content = trans('bot.justConnected');
-                        $message->channel->messages->save($message)->then(null, $this->promiseFailHandler);
-                    },
-                    $this->promiseFailHandler
-                );
+            $configsByServerId = $this->serverConfigs->getConfigsByServerId();
+            foreach ($configsByServerId as $guildId => $serverConfig) {
+                $this->targetMessageUpdater->updateMessage($guildId, trans('bot.justConnected'));
             }
 
             // Listen for events here
@@ -84,6 +64,15 @@ class RunBotCommand extends Command
 
                 return null;
             });
+
+            $loop = $discord->getLoop();
+            $disconnectHandler = function () use ($configsByServerId) {
+                foreach ($configsByServerId as $guildId => $serverConfig) {
+                    $this->targetMessageUpdater->updateMessage($guildId, trans('bot.disconnected'));
+                }
+            };
+            $loop->addSignal(SIGINT, $disconnectHandler);
+            $loop->addSignal(SIGTERM, $disconnectHandler);
         });
 
         $discord->run();
