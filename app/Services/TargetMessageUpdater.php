@@ -5,6 +5,7 @@ namespace App\Services;
 
 use Discord\Discord;
 use Discord\Parts\Channel\Message;
+use React\Promise\ExtendedPromiseInterface;
 
 class TargetMessageUpdater
 {
@@ -15,13 +16,13 @@ class TargetMessageUpdater
     )
     {}
 
-    public function updateMessage(string $guildId, string $contents)
+    public function updateMessage(string $guildId, string $contents): ExtendedPromiseInterface
     {
         $guild = $this->discord->guilds->get('id', $guildId);
-        $this->targetMessageByGuildFetcher->fetch($guild)->done(
+        return $this->targetMessageByGuildFetcher->fetch($guild)->then(
             function (Message $message) use ($contents) {
                 $message->content = trans($contents);
-                $message->channel->messages->save($message)->then(null, $this->promiseFailHandler);
+                return $message->channel->messages->save($message)->then(null, $this->promiseFailHandler);
             },
             $this->promiseFailHandler
         );

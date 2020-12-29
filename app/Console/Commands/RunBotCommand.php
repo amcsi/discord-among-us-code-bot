@@ -11,6 +11,7 @@ use Discord\Discord;
 use Discord\Parts\Channel\Message;
 use Discord\WebSockets\Event;
 use Illuminate\Console\Command;
+use function React\Promise\all;
 
 class RunBotCommand extends Command
 {
@@ -78,9 +79,17 @@ class RunBotCommand extends Command
 
             $loop = $discord->getLoop();
             $disconnectHandler = function () use ($configsByServerId) {
+                $promises = [];
+                $this->info('A termination signal has been received.');
+                $this->info('Updating the message in each guild to indicate that the bot is offline.');
                 foreach ($configsByServerId as $guildId => $serverConfig) {
-                    $this->targetMessageUpdater->updateMessage($guildId, trans('bot.disconnected'));
+                    $promises[] = $this->targetMessageUpdater->updateMessage($guildId, trans('bot.disconnected'));
                 }
+
+                // Once the "disconnected" message has been sent to all servers, terminate the application.
+                all($promises)->always(function () {
+                    $this->discord->close(true);
+                });
             };
             $loop->addSignal(SIGINT, $disconnectHandler);
             $loop->addSignal(SIGTERM, $disconnectHandler);
