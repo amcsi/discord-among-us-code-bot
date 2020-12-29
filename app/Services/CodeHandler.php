@@ -13,7 +13,6 @@ use Discord\Parts\Channel\Message;
 use Discord\Parts\Guild\Guild;
 use Illuminate\Support\Arr;
 use Psr\Log\LoggerInterface;
-use React\Promise\ExtendedPromiseInterface;
 
 /**
  * Saves a code update if the message has a code in it, then updates the codes message if so.
@@ -28,7 +27,6 @@ class CodeHandler
         private TargetMessageByGuildFetcher $targetMessageByGuildFetcher,
         private TargetChannelByMessageGetter $targetChannelByMessageGetter,
         private TargetChannelByGuildGetter $targetChannelByGuildGetter,
-        private PromiseFailHandler $promiseFailHandler,
         private LoggerInterface $logger,
     ) {
         $this->arrayCache = cache()->driver('array');
@@ -47,21 +45,13 @@ class CodeHandler
             return;
         }
 
-        $targetMessagePromise = $this->targetMessageByGuildFetcher->fetch($targetChannel->guild);
-        $targetMessagePromise->done(function (Message $targetMessage) use ($sourceMessage) {
-            $this->handleWithTargetMessage($sourceMessage, $targetMessage)->then(null, $this->promiseFailHandler);
-        }, fn($failure) => $this->logger->warning('Could not save message: ' . $failure));
-    }
-
-    private function handleWithTargetMessage(Message $sourceMessage, Message $targetMessage): ExtendedPromiseInterface
-    {
         $guild = $sourceMessage->channel->guild;
         $serverConfig = $this->serverConfigs->getConfigsByServerId()[$guild->id];
 
         $formattedServerAndCode = CodeMatcher::matchAndFormatText($sourceMessage->content);
         if (!$formattedServerAndCode) {
             $this->logger->debug('No server code was detected in this message.');
-            return \React\Promise\resolve();
+            return;
         }
 
         /** @var Collection|Channel[] $allowedVoiceChannels */
@@ -86,18 +76,12 @@ class CodeHandler
 
         if (!$voiceChannel) {
             $this->logger->debug('The author of the message is not in any of the designated game voice channels.');
-            return \React\Promise\resolve();
+            return;
         }
 
         $this->serverCodes->setServerCode(new ServerCode($sourceMessage, $voiceChannel, $formattedServerAndCode));
 
-        $messageContent = $this->serverCodes->getServerCodeMessageContent($guild);
-
-        $this->logger->debug('Updating message to:');
-        $this->logger->debug($messageContent);
-
-        $targetMessage->content = $messageContent;
-        return $targetMessage->channel->messages->save($targetMessage);
+        $this->updateCodes($guild);
     }
 
     public function handleDelete(DeletedMessage $deletedMessage): void
@@ -109,6 +93,9 @@ class CodeHandler
         $this->updateCodes($guild);
     }
 
+    /**
+     * Updates a guild's target message with the latest codes.
+     */
     private function updateCodes(Guild $guild): void
     {
         $targetChannel = $this->targetChannelByGuildGetter->get($guild);
