@@ -55,7 +55,7 @@ class CodeHandler
 
         $formattedServerAndCode = CodeMatcher::matchAndFormatText($sourceMessage->content);
         if (!$formattedServerAndCode) {
-            $this->logger->debug('No server code was detected in this message.');
+            // No server code was detected in this message.
             return;
         }
 
