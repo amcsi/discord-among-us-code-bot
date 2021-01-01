@@ -21,7 +21,7 @@ class TargetChannelByGuildGetter
     {
         $guildId = $guild->id;
         $configsByGuildId = $this->serverConfigs->getConfigsByServerId();
-        $targetChannelId = $configsByGuildId[$guildId]->getTargetChannelId();
+        $targetChannelId = $configsByGuildId[$guildId]->targetChannelId;
 
         $targetChannelCacheKey = "target_channel_by_guild_id_$guildId";
         return $this->arrayCache->rememberForever(

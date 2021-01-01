@@ -43,7 +43,7 @@ class ServerConfigs
     {
         if (!$this->configsBySourceChannelId) {
             $this->configsBySourceChannelId = $this->configsByServer->keyBy(
-                fn(DiscordServerConfig $config) => $config->getSourceChannelId()
+                fn(DiscordServerConfig $config) => $config->sourceChannelId
             );
         }
         return $this->configsBySourceChannelId;

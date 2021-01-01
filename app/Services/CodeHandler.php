@@ -19,16 +19,18 @@ use Psr\Log\LoggerInterface;
 class CodeHandler
 {
     private $arrayCache;
+    private $configsByServerId;
 
     public function __construct(
         private ServerCodes $serverCodes,
-        private ServerConfigs $serverConfigs,
         private TargetMessageByGuildFetcher $targetMessageByGuildFetcher,
         private TargetChannelByMessageGetter $targetChannelByMessageGetter,
         private TargetChannelByGuildGetter $targetChannelByGuildGetter,
         private LoggerInterface $logger,
+        ServerConfigs $serverConfigs,
     ) {
         $this->arrayCache = cache()->driver('array');
+        $this->configsByServerId = $serverConfigs->getConfigsByServerId();
     }
 
     public function handle(Message $sourceMessage): void
@@ -51,7 +53,7 @@ class CodeHandler
         }
 
         $guild = $sourceMessage->channel->guild;
-        $serverConfig = $this->serverConfigs->getConfigsByServerId()[$guild->id];
+        $serverConfig = $this->configsByServerId[$guild->id];
 
         $formattedServerAndCode = CodeMatcher::matchAndFormatText($sourceMessage->content);
         if (!$formattedServerAndCode) {
@@ -65,7 +67,7 @@ class CodeHandler
             60 * 15,
             fn() => $sourceMessage->channel->guild->channels->filter(
                 fn(Channel $channel) => $channel->type === Channel::TYPE_VOICE && Arr::first(
-                        $serverConfig->getGameVoiceRegexes(),
+                        $serverConfig->gameVoiceRegexes,
                         fn(string $regex) => preg_match($regex, $channel->name)
                     )
             )
@@ -103,7 +105,13 @@ class CodeHandler
 
         $targetMessagePromise = $this->targetMessageByGuildFetcher->fetch($targetChannel->guild);
         $targetMessagePromise->done(function (Message $targetMessage) use ($guild) {
-            $messageContent = $this->serverCodes->getServerCodeMessageContent($guild);
+            $sourceChannelId = $this->configsByServerId[$guild->id]->sourceChannelId;
+
+            $messageContent = sprintf(
+                "%s\n\n%s",
+                trans('bot.howToUpdateCodes', ['sourceChannelId' => $sourceChannelId]),
+                $this->serverCodes->getServerCodeMessageContent($guild)
+            );
 
             $this->logger->debug('Updating message to:');
             $this->logger->debug($messageContent);

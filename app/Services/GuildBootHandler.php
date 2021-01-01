@@ -33,7 +33,7 @@ class GuildBootHandler
                 continue;
             }
 
-            $this->handleGuildBoot($guild, $serverConfig->getSourceChannelId());
+            $this->handleGuildBoot($guild, $serverConfig->sourceChannelId);
         }
     }
 
