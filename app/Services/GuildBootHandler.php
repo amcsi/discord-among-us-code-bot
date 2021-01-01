@@ -26,8 +26,12 @@ class GuildBootHandler
     {
         $configsByServerId = $this->serverConfigs->getConfigsByServerId();
         foreach ($configsByServerId as $guildId => $serverConfig) {
-            /** @var Guild $guild */
             $guild = $this->discord->guilds[$guildId];
+
+            if (!$guild instanceof Guild) {
+                $this->logger->notice("No access to guild: `$guildId`");
+                continue;
+            }
 
             $this->handleGuildBoot($guild, $serverConfig->getSourceChannelId());
         }

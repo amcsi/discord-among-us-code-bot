@@ -17,6 +17,17 @@ class ServerConfigs
         $this->configsByServer = collect([
             // Test server
             '774696290398765137' => new DiscordServerConfig('774696290398765140', '778324539771191347', ['/^Voice/']),
+            // Among Us - Hungary
+            '746048273990549576' => new DiscordServerConfig('746048275336921172', '?', [
+                '/\bThe Skeld\b/',
+                '/\bMira HQ\b/',
+                '/\bPolus\b/',
+                '/^Fun Lobby\b/',
+                '/^Proximity Lobby\b/',
+                '/^Duo\b/',
+                '/^Trio\b/',
+                '/^Squad\b/',
+            ]),
         ]);
     }
 
