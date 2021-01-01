@@ -55,8 +55,8 @@ class CodeHandler
         $guild = $sourceMessage->channel->guild;
         $serverConfig = $this->configsByServerId[$guild->id];
 
-        $formattedServerAndCode = CodeMatcher::matchAndFormatText($sourceMessage->content);
-        if (!$formattedServerAndCode) {
+        $codeAndServer = CodeMatcher::matchText($sourceMessage->content);
+        if (!$codeAndServer) {
             // No server code was detected in this message.
             return;
         }
@@ -86,7 +86,7 @@ class CodeHandler
             return;
         }
 
-        $this->serverCodes->setServerCode(new ServerCode($sourceMessage, $voiceChannel, $formattedServerAndCode));
+        $this->serverCodes->setServerCode(new ServerCode($sourceMessage, $voiceChannel, $codeAndServer));
     }
 
     public function handleDeleteBySourceMessageId(string $sourceMessageId): void

@@ -5,6 +5,9 @@ namespace App\Values;
 
 use JetBrains\PhpStorm\Immutable;
 
+/**
+ * Has an Among Us code and a continent server.
+ */
 #[Immutable]
 class CodeAndServer
 {

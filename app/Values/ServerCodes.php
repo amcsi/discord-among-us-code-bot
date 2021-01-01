@@ -77,11 +77,19 @@ class ServerCodes implements \IteratorAggregate
             "%s\n\n%s",
             trans('bot.hereAreTheCodes'),
             $codes->map(
-                fn(ServerCode $serverCode) => sprintf(
-                    '%s: %s',
-                    $serverCode->voiceChannel->name,
-                    $serverCode->code
-                )
+                function (ServerCode $serverCode) {
+                    $codeAndServer = $serverCode->codeAndServer;
+                    $server = $codeAndServer->server;
+
+                    // Format the voice channel, code, and server for this line.
+                    return sprintf(
+                        '**%s**: `%s`%s',
+                        $serverCode->voiceChannel->name,
+                        $codeAndServer->code,
+                        // Optional server.
+                        $server ? " ({$server})" : ''
+                    );
+                }
             )->join("\n")
         );
     }
