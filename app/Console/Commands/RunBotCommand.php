@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Config\ServerConfigs;
 use App\Services\CodeHandler;
+use App\Services\GuildBootHandler;
 use App\Services\TargetMessageUpdater;
 use App\Values\ServerCodes;
 use Discord\Discord;
@@ -21,6 +22,7 @@ class RunBotCommand extends Command
     public function __construct(
         private ServerConfigs $serverConfigs,
         private Discord $discord,
+        private GuildBootHandler $guildBootHandler,
         private TargetMessageUpdater $targetMessageUpdater,
         private CodeHandler $codeHandler,
         private ServerCodes $serverCodes,
@@ -41,9 +43,9 @@ class RunBotCommand extends Command
             echo "Bot is ready.", PHP_EOL;
 
             $configsByServerId = $this->serverConfigs->getConfigsByServerId();
-            foreach ($configsByServerId as $guildId => $serverConfig) {
-                $this->targetMessageUpdater->updateMessage($guildId, trans('bot.justConnected'));
-            }
+
+            // Send welcome messages, replay message history.
+            $this->guildBootHandler->bootGuilds();
 
             // Listen for events here
             $discord->on('message', function (Message $message) {

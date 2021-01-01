@@ -31,12 +31,18 @@ class CodeHandler
         $this->arrayCache = cache()->driver('array');
     }
 
+    public function handle(Message $sourceMessage): void
+    {
+        $this->handleWithoutUpdate($sourceMessage);
+        $this->updateCodes($sourceMessage->channel->guild);
+    }
+
     /**
      * Handles updating a code based on an incoming message.
      *
      * If the message does not come from one of the configured guilds, it is ignored.
      */
-    public function handle(Message $sourceMessage): void
+    public function handleWithoutUpdate(Message $sourceMessage): void
     {
         $targetChannel = $this->targetChannelByMessageGetter->get($sourceMessage);
         if (!$targetChannel) {
@@ -79,8 +85,6 @@ class CodeHandler
         }
 
         $this->serverCodes->setServerCode(new ServerCode($sourceMessage, $voiceChannel, $formattedServerAndCode));
-
-        $this->updateCodes($guild);
     }
 
     public function handleDeleteBySourceMessageId(string $sourceMessageId): void
@@ -93,7 +97,7 @@ class CodeHandler
     /**
      * Updates a guild's target message with the latest codes.
      */
-    private function updateCodes(Guild $guild): void
+    public function updateCodes(Guild $guild): void
     {
         $targetChannel = $this->targetChannelByGuildGetter->get($guild);
 
