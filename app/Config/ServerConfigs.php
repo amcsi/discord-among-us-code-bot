@@ -28,6 +28,11 @@ class ServerConfigs
                 '/^Trio\b/',
                 '/^Squad\b/',
             ]),
+            // Among Us Magyarország / Hungary (Drelaky)
+            '752281132195905649' => new DiscordServerConfig('755519615131582464', '?', [
+                '/\bJátékterem\b/',
+                '/\bH&S\b/',
+            ]),
         ]);
     }
 
