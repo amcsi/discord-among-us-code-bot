@@ -1,61 +1,66 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# Discord Among Us Codes Bot
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Ez egy Discord bot PHP-ban megírva Among Us szerverekhez, ami egy fix publikus üzenetbe gyűjti a felhasználók által megosztott Among Us szerver kódokat.
 
-## About Laravel
+![Sample](https://i.imgur.com/coShwyh.png)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Miért készítettem
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Amikor Discord szervereken emberek próbálnak játszani Among Us-t egymással, mindig kellemetlen szokott lenni megadni egymásnak a kódokat. Vagy folyamatosan kérdezik újonnan belépett játékosok a voice csatornában, hogy mi a kód (amit folyamatosan diktálnak a többiek), vagy keresgélni kell a kódot a kódmegosztó csatornán, hogy melyik a legújabb beírt kód valaki által, aki a játék voice csatornájában benne van.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Ezért szerettem volna írni egy ilyet botot, ami segítene egy helyre gyűjteni a kódokat, hogy ne kelljen keresgetni.
 
-## Learning Laravel
+Csak hobbi célból készítettem, mint web fejlesztő.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Kérdések és válaszok
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Hogyan működik?
 
-## Laravel Sponsors
+A szerveredhez meg lenne jelölve:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+1. Egy forrás csatorna (játékos/csapat-kerső szoba)
+2. Egy (új) cél csatorna, ahova a bot for írni
+3. Logika, amiből megtudja, melyek a játék és nem játék voice csatornák.
 
-### Premium Partners
+Emberek irogatnák továbbra is a kódmegosztásokat az 1-es számban megjelölt szobában. A bot megfigyeli, hogy aki üzenetet ír abba a szobába, hogy ugye benne vannak egy 3-masban megadott logika alapján egy játék szobában, és hogy amit írtak - üzenetet - abban található-e Among Us szerver kódnak kinéző "szó" (pl HLESPO), és ha igen, akkor feljegyzi a bot, hogy ahhoz a voice csatornához (most már) az a kód tartozik.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[OP.GG](https://op.gg)**
+Azután a 2-es számú csatornában editálja a saját üzenetét, hogy benne legyen az összes jelenlegi kód. Az üzenet valahogy úgy nézne ki, mint a példa kép följebb.
 
-## Contributing
+Így a felhasználók továbbra is az 1-es pontban megjelölt szobába osztogatnák meg a kódjaikat, viszont a 2-es számú szobából lesz érdemes kiolvasniuk őket.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Akkor most át kellene szokniuk az embereknek, hogy hogyan osztanak meg kódot?
 
-## Code of Conduct
+Nagyon minimálisan. Direkt okosra írtam meg a botot, hogy a szobában - ahol eddig is osztottak meg az emberek kódokat - elválassza a bot az emberek üzeneteiből a rizsát, és megtartsa a lényeget: a kódot, és opcionálisan, hogy NA/EU.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Ilyen rizsa szöveggel teli kommentekből is megtalálja a bot a lényeget: EXLDBF a kód, és NA a szerver. 
 
-## Security Vulnerabilities
+![Rizsa példa](https://i.imgur.com/bk4YyV4.png)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+A leglényegesebb dolog, hogy fontos lesz egyrészt mind nagybetűkkel írni a kódot (különben lehetetleg megkülönböztetni sima szavaktól). Illetve muszáj egy üzenetbe írni mind a kódot, mind a szervert; nem lehet egymás alatt különböző üzenetekbe, különben a bot csak a kódot fogja látni.
 
-## License
+De akkor is legrosszabb esetben továbbra is az eddigi kódmegosztó csatornából az eddig megszokott módon manuálisan is megtalálhatják a játékosok a kódokat.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Mi van, ha emberek trollkodnak, és át akarják írni mások kódjait?
+
+A bot nézi, hogy melyik voice csatornában van az, aki a kódot írja, ezért nem tudod felülírni annak a kódját, akinek a voice csatornájában nem vagy. Tehát megtelt 10 fős voice csatornát nem lehetséges külsősnek trollkodnia.
+
+Persze beléphetne valaki egy be nem telt voice csatornára csak azért, hogy egy kamu kódot írjon, felülírván a kódot a voice csatornához, de ilyen fajta trollkodásokat mások is csinálhattak volna eddig is a megszokott manuális megosztási rendszerben.
+
+Még annyi, hogy ha valaki olyan voice csatornán van, ami nem is Among Us játékhoz tartozik, akkor ignorálja a kódodat a bot. Illetve 30 másodpercenként vizsgálja a bot, hogy kiürült-e egy voice csatorna, amihez volt elmentett kód, és ha igen, kitörli a kódot hozzá; szóval azt se tudják megtrollkodni (maradandóan), hogy bejárogassanak az összes voice szobába, hogy valami kamu kódot írjanak oda.
+
+### Milyen jogosultságok kellenek a botnak?
+
+Semmi más azon kívül, hogy csinálnod kell egy dedikált szöveges csatornát - ahova csak a bot tud írni - ahogy ugyanazt az egy üzenetet fogja fölülirogatni a kód táblázattal.
+
+Privát üzeneteket se küld a bot, szóval letilthatod ezt a jogot neki, ha akarod.
+
+### Hogyan tudom behívni ezt a botot a szerveremre?
+
+Szólj nekem Discordon vagy emailben. amcsi néven futok, vagy attila kukac szeremi pont org az email címem.
+
+Nem tudod csak úgy magadtól behívni a botot a szerveredre, mert kell némi dolgot manuálisan konfigurálnom a szerveredhez: hogy melyik a forrás csatorna (ahol a játékosok megosztanák a kódokat), melyik a cél csatorna (ahova a bot gyűjti a kódokat), és a logikát, hogy megkülönböztesse az Among Us játék voice szobákat a többi voice szobától.
+
+## Rólam
+
+Szerémi Attila (aka. amcsi) vagyok, 1987-ben születtem, és 2007-2009 óta vagyok web programozó (professzionálisan).
+Ezen a honlapomon olvashattok rólam: https://www.szeremi.org/
