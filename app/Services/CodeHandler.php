@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Config\ServerConfigs;
-use App\Message\DeletedMessage;
 use App\Values\ServerCode;
 use App\Values\ServerCodes;
 use Discord\Helpers\Collection;
@@ -84,13 +83,11 @@ class CodeHandler
         $this->updateCodes($guild);
     }
 
-    public function handleDelete(DeletedMessage $deletedMessage): void
+    public function handleDeleteBySourceMessageId(string $sourceMessageId): void
     {
-        $guild = $deletedMessage->channel->guild;
+        $deletedServerCode = $this->serverCodes->unsetServerCodeBySourceMessageId($sourceMessageId);
 
-        $this->serverCodes->unsetServerCodeBySourceMessageId($deletedMessage->id);
-
-        $this->updateCodes($guild);
+        $this->updateCodes($deletedServerCode->sourceMessage->channel->guild);
     }
 
     /**

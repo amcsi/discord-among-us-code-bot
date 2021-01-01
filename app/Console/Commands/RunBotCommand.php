@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Config\ServerConfigs;
-use App\Message\DeletedMessage;
 use App\Services\CodeHandler;
 use App\Services\TargetMessageUpdater;
 use App\Values\ServerCodes;
@@ -70,14 +69,23 @@ class RunBotCommand extends Command
                     return;
                 }
 
-                $this->codeHandler->handleDelete(
-                    new DeletedMessage($message->id, $this->discord->getChannel($message->channel_id))
-                );
+                $this->codeHandler->handleDeleteBySourceMessageId($message->id);
 
                 echo 'Deleting a message.', PHP_EOL;
             });
 
             $loop = $discord->getLoop();
+
+            // Periodically check the voice rooms with codes. If any ran out of members, then unset the code.
+            $loop->addPeriodicTimer(config('project.voiceTimeout'), function () {
+                foreach ($this->serverCodes as $serverCode) {
+                    if (!count($serverCode->voiceChannel->members)) {
+                        $this->info("Unsetting the code for {$serverCode->voiceChannel->name} due to empty voice channel.");
+                        $this->codeHandler->handleDeleteBySourceMessageId($serverCode->sourceMessage->id);
+                    }
+                }
+            });
+
             $disconnectHandler = function () use ($configsByServerId) {
                 $promises = [];
                 $this->info('A termination signal has been received.');

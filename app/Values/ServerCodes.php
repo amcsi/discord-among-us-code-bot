@@ -6,7 +6,7 @@ namespace App\Values;
 use Discord\Parts\Guild\Guild;
 use Illuminate\Support\Collection;
 
-class ServerCodes
+class ServerCodes implements \IteratorAggregate
 {
     /** @var Collection|ServerCode[][] */
     private Collection $codes;
@@ -41,12 +41,20 @@ class ServerCodes
         return isset($this->codeByMessageIdMap[$sourceMessageId]);
     }
 
-    public function unsetServerCodeBySourceMessageId(string $sourceMessageId): void
+    /**
+     * Unsets the server code by message ID. Then returns the deleted ServerCode.
+     */
+    public function unsetServerCodeBySourceMessageId(string $sourceMessageId): ServerCode
     {
         $serverCode = $this->codeByMessageIdMap[$sourceMessageId];
         $voiceChannel = $serverCode->voiceChannel;
         $guildId = $voiceChannel->guild_id;
+
+        $ret = $this->codes[$guildId][$voiceChannel->id];
+
         unset($this->codes[$guildId][$voiceChannel->id], $this->codeByMessageIdMap[$sourceMessageId]);
+
+        return $ret;
     }
 
     /** @return  Collection|ServerCode[] $codes */
@@ -76,5 +84,13 @@ class ServerCodes
                 )
             )->join("\n")
         );
+    }
+
+    /**
+     * @return ServerCode[]
+     */
+    public function getIterator()
+    {
+        return $this->codeByMessageIdMap->getIterator();
     }
 }
